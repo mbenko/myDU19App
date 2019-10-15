@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
+using myDU19App.Models;
 
 namespace myDU19App
 {
@@ -33,6 +35,9 @@ namespace myDU19App
 
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+            services.AddDbContext<myDataContext>(options =>
+                    options.UseSqlServer(Configuration.GetConnectionString("myDataContext")));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
