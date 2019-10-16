@@ -11,6 +11,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using myDU19App.Models;
+using Microsoft.Azure.Cosmos;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Queue;
 
 namespace myDU19App
 {
@@ -38,6 +41,28 @@ namespace myDU19App
 
             services.AddDbContext<myDataContext>(options =>
                     options.UseSqlServer(Configuration.GetConnectionString("myDataContext")));
+
+            // MB: Configure Cosmos
+            var client = new CosmosClient(Configuration.GetConnectionString("myCosmos"));
+
+            Database db = client.CreateDatabaseIfNotExistsAsync("myChores").Result;
+
+            Container myChores = db.CreateContainerIfNotExistsAsync("Chores", "/Owner", 400).Result;
+
+            services.AddSingleton<Container>(myChores);
+
+
+            // MB: Configure Azure Queues
+            CloudStorageAccount AzAccount = CloudStorageAccount.Parse(Configuration.GetConnectionString("myStorage"));
+
+            var azQClient = AzAccount.CreateCloudQueueClient();
+            
+            var azQueue = azQClient.GetQueueReference("new-chores");
+            
+            azQueue.CreateIfNotExistsAsync();
+            services.AddSingleton<CloudQueue>(azQueue);
+
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
